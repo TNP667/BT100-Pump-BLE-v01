@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BT100-2J Pump Panel v01</title>
+<script>addEventListener('error',function(e){var d=document.createElement('pre');d.style.cssText='position:fixed;left:0;right:0;top:0;z-index:999;margin:0;padding:8px;background:#b00;color:#fff;font:12px monospace;white-space:pre-wrap';d.textContent='Index v01 error: '+e.message+' (line '+e.lineno+')';(document.body||document.documentElement).appendChild(d)})</script>
+<style>
+:root{--bg:#e8eef0;--card:#fff;--ink:#12262e;--mute:#587079;--line:#d0dce0;--acc:#0b7a8c;--go:#1c9a52;--stop:#d24545;--r:14px}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1a1f;--card:#15262d;--ink:#e6f0f3;--mute:#8ba3ac;--line:#2a3f48;--acc:#3bb8cb;--go:#3ccf7a;--stop:#ef6b6b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px}
+main{max-width:460px;margin:0 auto;display:grid;gap:14px}
+main.wide{max-width:1000px}
+.view{display:grid;gap:14px}.view[hidden]{display:none}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+h1{font-size:18px;margin:0}h1 small{color:var(--mute);font-weight:500}
+nav{display:flex;gap:6px}
+nav button{min-height:36px;padding:6px 12px;font-weight:600}
+nav button.on,.seg button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.chip{font-size:13px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--mute)}
+.chip.ok{color:var(--go);border-color:var(--go)}.chip.bad{color:var(--stop);border-color:var(--stop)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+h2{font-size:15px;margin:0 0 12px;color:var(--mute);font-weight:600}
+.big{font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;display:flex;justify-content:center;align-items:baseline}
+.big small{font-size:20px;color:var(--mute);font-weight:500;margin-left:6px}
+.big input{font:inherit;color:inherit;width:5.6ch;text-align:center;background:transparent;border:0;border-bottom:3px dotted var(--line);border-radius:0;padding:0;-moz-appearance:textfield;appearance:textfield}
+.big input::-webkit-outer-spin-button,.big input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.big input:focus{outline:none;border-bottom:3px solid var(--acc)}
+.hint{text-align:center;color:var(--mute);font-size:13px;margin:8px 0 0}
+.row{display:flex;gap:10px;align-items:center}
+button,select{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:12px 14px;min-height:48px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button:disabled,input:disabled,select:disabled{opacity:.45;cursor:not-allowed}
+.fine{width:52px;font-size:22px;padding:0}
+input[type=range]{flex:1;height:44px;-webkit-appearance:none;appearance:none;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:99px;background:linear-gradient(to right,var(--acc) var(--p,0%),var(--line) var(--p,0%))}
+input[type=range]::-moz-range-track{height:10px;border-radius:99px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:#fff;border:4px solid var(--acc);margin-top:-11px;box-shadow:0 1px 4px #0004}
+.ends{display:flex;justify-content:space-between;color:var(--mute);font-size:13px;margin:0 60px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.seg button{font-weight:600}
+#conn{width:100%;font-weight:600;color:#fff;background:var(--acc);border-color:var(--acc)}
+#conn.off{background:var(--card);color:var(--ink);border-color:var(--line)}
+#go,#sGo{font-size:20px;font-weight:700;min-height:64px;color:#fff;background:var(--go);border-color:var(--go)}
+#go{width:100%}#sGo{flex:1}
+#go.running,#sGo.running{background:var(--stop);border-color:var(--stop)}
+#status,#note,#seqStatus,#seqPump{text-align:center;color:var(--mute);margin:10px 0 0;min-height:22px}
+#note{font-size:14px;margin:0}
+.tin{display:flex;align-items:center;gap:6px}
+.tin input{width:76px;font:inherit;font-size:22px;padding:8px;text-align:center;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:14px}
+.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .9s linear}
+#left{font-size:28px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin-top:10px}
+/* ---- Step Sequencer ---- */
+#tools{display:flex;gap:8px;flex-wrap:wrap}
+#tools button{min-height:40px;padding:8px 14px;font-weight:600}
+#canvas{position:relative;overflow:auto;height:480px;background:var(--card) radial-gradient(var(--line) 1px,transparent 1px) 0 0/20px 20px;border:1px solid var(--line);border-radius:var(--r)}
+#stage{position:relative;width:1100px;height:560px}
+#svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.edge{fill:none;stroke:var(--ink);stroke-width:2.5;opacity:.75}
+.tmp{fill:none;stroke:var(--acc);stroke-width:2.5;stroke-dasharray:6 4}
+.hdl{fill:var(--acc);stroke:#fff;stroke-width:2;pointer-events:all;cursor:grab;touch-action:none}
+.edx{pointer-events:all;cursor:pointer}.edx circle{fill:var(--stop)}
+.edx text{fill:#fff;font:700 13px sans-serif;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.box{position:absolute;width:176px;background:var(--card);border:2px solid var(--c);border-radius:12px;box-shadow:0 2px 8px #0002;font-size:14px;user-select:none}
+.box .hd{display:flex;justify-content:space-between;align-items:center;padding:5px 6px 5px 10px;background:var(--c);color:#fff;border-radius:9px 9px 0 0;font-weight:700;cursor:grab;touch-action:none}
+.box .x{min-height:0;width:24px;height:24px;padding:0;border-radius:50%;border:0;background:#0003;color:#fff;font-size:16px;line-height:1}
+.box .bd{padding:8px;display:grid;gap:6px}
+.box label{display:flex;justify-content:space-between;align-items:center;gap:6px;color:var(--mute)}
+.box input,.box .bd select{width:78px;min-height:0;font:inherit;padding:4px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);text-align:center}
+.port{position:absolute;width:16px;height:16px;border-radius:50%;background:var(--card);border:3px solid var(--c);touch-action:none}
+.port.in{left:-10px;top:50%;margin-top:-8px}
+.out{position:relative;display:flex;justify-content:flex-end;align-items:center;color:var(--mute);font-size:12px;min-height:20px}
+.out .port{right:-18px;top:50%;margin-top:-8px;cursor:crosshair;background:var(--c)}
+.cv{text-align:center;font-size:12px;color:var(--mute)}
+.prog{height:6px;background:var(--line);overflow:hidden;border-radius:0 0 9px 9px}
+.prog i{display:block;height:100%;width:0;background:var(--c)}
+.box.cur{box-shadow:0 0 0 4px var(--acc);animation:pulse 1.2s infinite}
+.box.flash{box-shadow:0 0 0 4px var(--c)}
+@keyframes pulse{50%{box-shadow:0 0 0 8px #0b7a8c55}}
+#nameLayer{position:absolute;left:0;top:0;pointer-events:none;z-index:99}
+#nameLayer span{position:absolute;font:10px/1 monospace;background:#e0245e;color:#fff;padding:1px 3px;border-radius:3px;white-space:nowrap}
+</style></head><body><main>
+<header data-name="app.header"><h1 data-name="app.title">BT100-2J Pump Panel <small data-name="app.version">v01</small></h1>
+<nav data-name="app.menu"><button id="tabPanel" class="on" data-name="app.menu.panel">Pump Panel</button><button id="tabSeq" data-name="app.menu.sequencer">Step Sequencer</button></nav>
+<span id="link" class="chip" data-name="app.chip">Not connected</span></header>
+<button id="conn" data-name="app.btn.connect">Connect</button>
+<p id="note" data-name="app.note"></p>
+
+<div id="viewPanel" class="view" data-name="panel.view">
+<section class="card" data-name="panel.speed"><h2>Speed</h2>
+<div class="big"><input id="rpmv" data-name="panel.speed.value" type="number" inputmode="decimal" step="0.1" min="0.1" max="100" value="10.0" aria-label="Type an exact speed in rpm"><small>rpm</small></div>
+<p class="hint">Tap the number to type an exact speed (0.1 to 100)</p>
+<div class="row" style="margin-top:12px">
+<button class="fine" id="minus" data-name="panel.speed.minus" aria-label="Decrease 0.1 rpm">−</button>
+<input type="range" id="rpm" data-name="panel.speed.slider" min="1" max="1000" value="100" aria-label="Pump speed in rpm">
+<button class="fine" id="plus" data-name="panel.speed.plus" aria-label="Increase 0.1 rpm">+</button></div>
+<div class="ends"><span>0.1</span><span>100</span></div></section>
+
+<section class="card" data-name="panel.direction"><h2>Direction</h2>
+<div class="seg"><button id="cw" data-name="panel.direction.cw">↻ Clockwise</button><button id="ccw" data-name="panel.direction.ccw">↺ Counter-clockwise</button></div></section>
+
+<section class="card" data-name="panel.run"><h2>Run</h2>
+<button id="go" data-name="panel.run.startStop">Start</button><p id="status" data-name="panel.run.status">Stopped</p>
+<hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+<h2>Run for a set time, then stop</h2>
+<div class="row" style="justify-content:space-between">
+<div class="tin"><input id="tm" data-name="panel.timer.min" type="number" min="0" max="999" value="1" aria-label="Minutes">min
+<input id="ts" data-name="panel.timer.sec" type="number" min="0" max="59" value="0" aria-label="Seconds">sec</div>
+<button id="tbtn" data-name="panel.timer.start">Start timer</button></div>
+<div id="tinfo" hidden><div id="left" data-name="panel.timer.left">00:00</div><div class="bar"><i id="fill" data-name="panel.timer.progress"></i></div></div></section>
+</div>
+
+<div id="viewSeq" class="view" data-name="seq.view" hidden>
+<section class="card" data-name="seq.toolbar"><h2>Step Sequencer</h2>
+<div id="tools"><button data-add="act" data-name="seq.btn.addActive">+ Active</button><button data-add="pause" data-name="seq.btn.addPause">+ Pause</button><button data-add="cnt" data-name="seq.btn.addCounter">+ Counter</button></div>
+<p class="hint" style="text-align:left">Drag a box by its title. Drag from the dot on a box's right edge onto another box to connect. Drag the round handle in the middle of an arrow to bend it (use this for loops). ✕ deletes.</p></section>
+<div id="canvas" data-name="seq.canvas"><div id="stage" data-name="seq.stage">
+<div id="boxes"></div>
+<svg id="svg" data-name="seq.arrows"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--ink)"/></marker></defs></svg>
+</div></div>
+<section class="card" data-name="seq.runbar">
+<div class="seg"><button id="mTest" data-name="seq.btn.testRun">🧪 Test run</button><button id="mRun" data-name="seq.btn.run">⚡ Run</button></div>
+<p class="hint" id="modeHint" data-name="seq.modeHint"></p>
+<div class="row" style="margin-top:12px"><button id="sGo" data-name="seq.btn.startStop">Start</button><button id="sReset" data-name="seq.btn.reset">Reset</button>
+<select id="sSpd" data-name="seq.sel.speed" aria-label="Simulation speed"><option value="1">×1</option><option value="5">×5</option><option value="20">×20</option><option value="60">×60</option></select></div>
+<p id="seqStatus" data-name="seq.status">Ready</p><p id="seqPump" data-name="seq.pumpStatus"></p></section>
+</div>
+<p style="text-align:center"><button id="btnNames" data-name="app.btn.showNames" style="min-height:32px;padding:4px 10px;font-size:13px">Show / hide element names</button></p>
+</main><div id="nameLayer"></div>
+<script>
+/* ============ BLE + PUMP PANEL ============ */
+const SVC='b7a10001-5a1e-4c2e-9a3b-0b100e2f0001',CMD='b7a10001-5a1e-4c2e-9a3b-0b100e2f0002',ST='b7a10001-5a1e-4c2e-9a3b-0b100e2f0003';
+const $=id=>document.getElementById(id);
+const S={rpm:10,cw:true,run:false,left:0,total:0,link:false,seq:{state:0,cur:255,left:0,total:0}};
+let dev=null,cmdC=null,online=false,drag=false,q=Promise.resolve(),rpmBusy=false,rpmNext=null;
+const enc=new TextEncoder();
+function tx(t){q=q.then(()=>cmdC.writeValue(enc.encode(t))).catch(()=>{});return q}
+function sendRpm(){
+  if(!online)return;
+  rpmNext=Math.round(S.rpm*10);
+  if(rpmBusy)return;
+  rpmBusy=true;
+  (async()=>{while(rpmNext!==null){const v=rpmNext;rpmNext=null;await tx('S '+v)}rpmBusy=false})();
+}
+function onStatus(e){
+  const d=e.target.value,f=d.getUint8(2);
+  if(!drag)S.rpm=d.getUint16(0)/10;
+  S.run=!!(f&1);S.cw=!!(f&2);S.link=!!(f&4);
+  S.left=d.getUint32(4);S.total=d.getUint32(8);
+  if(d.byteLength>=18){
+    S.seq={state:d.getUint8(12),cur:d.getUint8(13),left:d.getUint16(14),total:d.getUint16(16)};
+    if((S.seq.state===1||S.seq.state===2)&&SQ.mode!=='run'&&SQ.state===0)SQ.mode='run';
+    seqFromStatus();
+  }
+  render();
+}
+function onLost(){
+  const was=online;online=false;cmdC=null;
+  if(was)$('note').textContent='Connection lost. The ESP32 stops a run without a timer; a timed run or a running sequence finishes by itself.';
+  render();
+}
+async function connect(){
+  if(dev&&dev.gatt.connected){dev.gatt.disconnect();return}
+  try{
+    dev=await navigator.bluetooth.requestDevice({filters:[{services:[SVC]}]});
+    dev.addEventListener('gattserverdisconnected',onLost);
+    $('link').textContent='Connecting…';$('link').className='chip';
+    const srv=await dev.gatt.connect(),svc=await srv.getPrimaryService(SVC);
+    cmdC=await svc.getCharacteristic(CMD);
+    const st=await svc.getCharacteristic(ST);
+    st.addEventListener('characteristicvaluechanged',onStatus);
+    await st.startNotifications();
+    online=true;$('note').textContent='';
+    onStatus({target:{value:await st.readValue()}});
+  }catch(e){
+    online=false;
+    if(e.name!=='NotFoundError')$('note').textContent='Could not connect: '+e.message;
+    render();
+  }
+}
+const mmss=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function render(){
+  if(document.activeElement!==$('rpmv'))$('rpmv').value=S.rpm.toFixed(1);
+  if(!drag)$('rpm').value=Math.round(S.rpm*10);
+  $('rpm').style.setProperty('--p',((S.rpm*10-1)/999*100)+'%');
+  $('cw').classList.toggle('on',S.cw);$('ccw').classList.toggle('on',!S.cw);
+  const go=$('go');go.textContent=S.run?'Stop':'Start';go.classList.toggle('running',S.run);
+  const dir=S.cw?'clockwise':'counter-clockwise';
+  $('status').textContent=!S.run?'Stopped':S.left>0?`Running ${dir} at ${S.rpm.toFixed(1)} rpm, stops in ${mmss(S.left)}`:`Running ${dir} at ${S.rpm.toFixed(1)} rpm`;
+  const timing=S.run&&S.left>0;
+  $('tinfo').hidden=!timing;$('tbtn').disabled=timing||!online;
+  $('left').textContent=mmss(S.left);
+  $('fill').style.width=S.total?((S.total-S.left)/S.total*100)+'%':'0';
+  for(const id of['rpmv','rpm','minus','plus','cw','ccw','go','tm','ts'])$(id).disabled=!online;
+  const c=$('conn');c.textContent=online?'Disconnect':'Connect';c.classList.toggle('off',online);
+  const l=$('link');
+  if(!online){l.textContent='Not connected';l.className='chip bad'}
+  else if(!S.link){l.textContent='Pump not answering';l.className='chip bad'}
+  else{l.textContent='Pump connected';l.className='chip ok'}
+  seqUI();
+}
+const rpm=$('rpm');
+rpm.addEventListener('input',()=>{drag=true;S.rpm=rpm.value/10;render();sendRpm()});
+rpm.addEventListener('change',()=>{drag=false;sendRpm()});
+function nudge(d){S.rpm=Math.min(100,Math.max(0.1,Math.round(S.rpm*10+d)/10));render();sendRpm()}
+const rv=$('rpmv');
+rv.addEventListener('focus',()=>rv.select());
+rv.addEventListener('keydown',e=>{if(e.key==='Enter')rv.blur()});
+rv.addEventListener('change',()=>{
+  const v=parseFloat(rv.value);
+  if(!isNaN(v)){S.rpm=Math.min(100,Math.max(0.1,Math.round(v*10)/10));sendRpm()}
+  render();
+});
+rv.addEventListener('blur',render);
+$('minus').onclick=()=>nudge(-1);$('plus').onclick=()=>nudge(1);
+$('cw').onclick=()=>{S.cw=true;render();tx('D 1')};
+$('ccw').onclick=()=>{S.cw=false;render();tx('D 0')};
+$('go').onclick=()=>tx('R '+(S.run?0:1));
+$('tbtn').onclick=()=>{
+  const t=Math.min(999,Math.max(0,+$('tm').value||0))*60+Math.min(59,Math.max(0,+$('ts').value||0));
+  if(t<1){$('status').textContent='Enter a time longer than 0 seconds';return}
+  tx('T '+t);
+};
+$('conn').onclick=connect;
+if(!navigator.bluetooth){
+  $('conn').disabled=true;
+  $('note').textContent='This browser has no Web Bluetooth. Use Chrome or Edge (PC, Android), or the Bluefy app on iPhone.';
+}
+
+/* ============ MENU ============ */
+function tab(seq){
+  $('viewPanel').hidden=seq;$('viewSeq').hidden=!seq;
+  $('tabPanel').classList.toggle('on',!seq);$('tabSeq').classList.toggle('on',seq);
+  document.querySelector('main').classList.toggle('wide',seq);
+  if(seq)redrawEdges();
+}
+$('tabPanel').onclick=()=>tab(false);$('tabSeq').onclick=()=>tab(true);
+
+/* ============ STEP SEQUENCER ============ */
+const NS='http://www.w3.org/2000/svg',BW=176,SW=1100,SH=560,KEY='bt100seq_v01';
+const TYPES={start:{c:'#1c9a52',t:'▶ START'},act:{c:'#0b7a8c',t:'ACTIVE'},pause:{c:'#c98a12',t:'PAUSE'},cnt:{c:'#7a4fc7',t:'COUNTER'}};
+const RULE={rpm:[0.1,100,10],dur:[1,65535,1],ini:[-999,999,1],step:[-999,999,1],fin:[-999,999,1],cw:[0,1,1]};
+const demo=()=>({next:10,nodes:[{id:1,t:'start',x:20,y:70},{id:2,t:'act',x:150,y:40,rpm:20,cw:1,dur:10},{id:3,t:'pause',x:370,y:40,dur:5},{id:4,t:'cnt',x:580,y:40,ini:0,step:1,fin:3}],
+ edges:[{id:5,from:1,port:1,to:2,dx:0,dy:0},{id:6,from:2,port:1,to:3,dx:0,dy:0},{id:7,from:3,port:1,to:4,dx:0,dy:0},{id:8,from:4,port:1,to:2,dx:0,dy:190}]});
+function load(){try{const g=JSON.parse(localStorage.getItem(KEY));if(g&&g.nodes&&g.edges&&g.nodes.some(n=>n.t==='start'))return g}catch(e){}return null}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}}
+let G=load()||demo();
+const stage=$('stage'),boxes=$('boxes'),svg=$('svg');
+const nodeOf=id=>G.nodes.find(n=>n.id==id),boxEl=id=>boxes.querySelector(`.box[data-id="${id}"]`);
+const SQ={mode:'test',state:0,cur:-1,next:-1,cnt:[],prog:null,timer:0,left:0,len:0,t0:0,spd:1,sim:{rpm:0,cw:true,run:false}};
+
+const field=(n,f,l,step)=>`<label>${l}<input data-f="${f}" data-name="seq.box${n.id}.${f}" type="number" min="${RULE[f][0]}" max="${RULE[f][1]}" step="${step||1}" value="${n[f]}"></label>`;
+const outRow=(id,p,l)=>`<div class="out"><span>${l}</span><i class="port o" data-port="${p}" data-name="seq.box${id}.out${p}"></i></div>`;
+function boxHTML(n){
+  const id=n.id;let b='';
+  if(n.t==='start')b=outRow(id,1,'first step');
+  if(n.t==='act')b=field(n,'rpm','rpm',0.1)+`<label>direction<select data-f="cw" data-name="seq.box${id}.cw"><option value="1"${n.cw?' selected':''}>↻ CW</option><option value="0"${n.cw?'':' selected'}>↺ CCW</option></select></label>`+field(n,'dur','seconds')+outRow(id,1,'next');
+  if(n.t==='pause')b=field(n,'dur','seconds')+outRow(id,1,'next');
+  if(n.t==='cnt')b=field(n,'ini','initial')+field(n,'step','step ±')+field(n,'fin','final')+'<div class="cv" data-name="seq.box'+id+'.count">count –</div>'+outRow(id,1,'① not final')+outRow(id,2,'② final reached');
+  const x=n.t==='start'?'':`<button class="x" data-name="seq.box${id}.delete" aria-label="Delete box">×</button>`;
+  return(n.t==='start'?'':`<i class="port in" data-name="seq.box${id}.in"></i>`)+`<div class="hd" data-name="seq.box${id}.title"><span>${TYPES[n.t].t}${n.t==='start'?'':' #'+id}</span>${x}</div><div class="bd">${b}</div>`+(n.t==='act'||n.t==='pause'?'<div class="prog"><i data-name="seq.box'+id+'.progress"></i></div>':'');
+}
+function renderBoxes(){
+  boxes.innerHTML='';
+  for(const n of G.nodes){
+    const el=document.createElement('div');
+    el.className='box';el.dataset.id=n.id;el.dataset.name='seq.box'+n.id;
+    el.style.cssText=`--c:${TYPES[n.t].c};left:${n.x}px;top:${n.y}px`;
+    el.innerHTML=boxHTML(n);boxes.appendChild(el);
+  }
+  redrawEdges();
+}
+const pt=ev=>{const s=stage.getBoundingClientRect();return{x:ev.clientX-s.left,y:ev.clientY-s.top}};
+function centre(el){const r=el.getBoundingClientRect(),s=stage.getBoundingClientRect();return{x:r.left+r.width/2-s.left,y:r.top+r.height/2-s.top}}
+function redrawEdges(){
+  svg.querySelectorAll('g.eg').forEach(g=>{if(!G.edges.some(e=>e.id==g.dataset.e))g.remove()});
+  for(const e of G.edges){
+    const fb=boxEl(e.from),tb=boxEl(e.to);if(!fb||!tb)continue;
+    let g=svg.querySelector(`g.eg[data-e="${e.id}"]`);
+    if(!g){g=document.createElementNS(NS,'g');g.setAttribute('class','eg');g.dataset.e=e.id;g.dataset.name='seq.arrow'+e.id;
+      g.innerHTML='<path class="edge" marker-end="url(#ah)"/><circle class="hdl" r="8"/><g class="edx"><circle r="9"/><text>×</text></g>';svg.appendChild(g)}
+    const a=centre(fb.querySelector(`.port.o[data-port="${e.port}"]`)),b=centre(tb.querySelector('.port.in'));
+    const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2},m={x:mid.x+e.dx,y:mid.y+e.dy};
+    g.children[0].setAttribute('d',`M${a.x} ${a.y}Q${mid.x+2*e.dx} ${mid.y+2*e.dy} ${b.x} ${b.y}`);
+    g.children[1].setAttribute('cx',m.x);g.children[1].setAttribute('cy',m.y);
+    g.children[2].setAttribute('transform',`translate(${m.x+18} ${m.y-18})`);
+  }
+}
+function drag2(el,e,mv,end){
+  e.preventDefault();const x0=e.clientX,y0=e.clientY;el.setPointerCapture(e.pointerId);
+  const m=ev=>mv(ev.clientX-x0,ev.clientY-y0,ev);
+  const u=ev=>{el.removeEventListener('pointermove',m);el.removeEventListener('pointerup',u);el.removeEventListener('pointercancel',u);if(end)end(ev)};
+  el.addEventListener('pointermove',m);el.addEventListener('pointerup',u);el.addEventListener('pointercancel',u);
+}
+function connect2(from,port,to){
+  G.edges=G.edges.filter(e=>!(e.from===from&&e.port===port));
+  const F=nodeOf(from),T=nodeOf(to);
+  G.edges.push({id:G.next++,from,port,to,dx:0,dy:T.x<=F.x?190:0});
+  redrawEdges();save();
+}
+boxes.addEventListener('pointerdown',e=>{
+  const el=e.target.closest('.box');if(!el||e.target.closest('.x'))return;
+  const n=nodeOf(el.dataset.id),port=e.target.closest('.port.o');
+  if(port){
+    const tmp=document.createElementNS(NS,'path');tmp.setAttribute('class','tmp');svg.appendChild(tmp);
+    const a=centre(port);
+    drag2(port,e,(dx,dy,ev)=>{const p=pt(ev);tmp.setAttribute('d',`M${a.x} ${a.y}L${p.x} ${p.y}`)},ev=>{
+      tmp.remove();const t=document.elementFromPoint(ev.clientX,ev.clientY),b=t&&t.closest('.box');
+      if(b){const to=+b.dataset.id;if(to!==n.id&&nodeOf(to).t!=='start')connect2(n.id,+port.dataset.port,to)}
+    });
+  }else if(e.target.closest('.hd')){
+    const ox=n.x,oy=n.y;
+    drag2(el,e,(dx,dy)=>{n.x=Math.max(0,Math.min(SW-BW,ox+dx));n.y=Math.max(0,Math.min(SH-60,oy+dy));el.style.left=n.x+'px';el.style.top=n.y+'px';redrawEdges()},save);
+  }
+});
+boxes.addEventListener('click',e=>{
+  const x=e.target.closest('.x');if(!x)return;
+  const id=+x.closest('.box').dataset.id;
+  G.nodes=G.nodes.filter(n=>n.id!==id);G.edges=G.edges.filter(ed=>ed.from!==id&&ed.to!==id);
+  renderBoxes();save();
+});
+boxes.addEventListener('change',e=>{
+  const f=e.target.dataset.f;if(!f)return;
+  const n=nodeOf(e.target.closest('.box').dataset.id),[lo,hi,k]=RULE[f];
+  let v=parseFloat(e.target.value);if(isNaN(v))v=n[f];
+  v=Math.min(hi,Math.max(lo,Math.round(v*k)/k));n[f]=v;e.target.value=v;save();
+});
+svg.addEventListener('pointerdown',e=>{
+  const h=e.target.closest('.hdl');if(!h)return;
+  const ed=G.edges.find(x=>x.id==h.parentNode.dataset.e),dx0=ed.dx,dy0=ed.dy;
+  drag2(h,e,(dx,dy)=>{ed.dx=dx0+dx;ed.dy=dy0+dy;redrawEdges()},save);
+});
+svg.addEventListener('click',e=>{
+  const x=e.target.closest('.edx');if(!x)return;
+  G.edges=G.edges.filter(ed=>ed.id!=x.parentNode.dataset.e);redrawEdges();save();
+});
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{
+  if(G.nodes.length>=21){seqMsg('Maximum 20 boxes.');return}
+  const t=b.dataset.add,k=G.nodes.length;
+  const base={act:{rpm:10,cw:1,dur:10},pause:{dur:5},cnt:{ini:0,step:1,fin:3}}[t];
+  G.nodes.push({id:G.next++,t,x:30+(k%7)*40,y:290+(k%4)*20,...base});renderBoxes();save();
+});
+
+/* ---- compile diagram to a flat step list (same list is sent to the ESP32) ---- */
+function compile(){
+  const body=G.nodes.filter(n=>n.t!=='start'),idx=new Map(body.map((n,i)=>[n.id,i]));
+  const out=(id,p)=>{const e=G.edges.find(e=>e.from===id&&e.port===p);return e&&idx.has(e.to)?idx.get(e.to):-1};
+  const st=out(G.nodes.find(n=>n.t==='start').id,1);
+  const P={body,st,n1:body.map(n=>out(n.id,1)),n2:body.map(n=>out(n.id,2))};
+  if(st<0)P.err='Connect the START box to the first step with an arrow.';
+  else if(body.length>20)P.err='Maximum 20 boxes.';
+  return P;
+}
+function upload(P){
+  tx('Q');
+  P.body.forEach((n,i)=>{
+    if(n.t==='act')tx(`A ${i} ${Math.round(n.rpm*10)} ${n.cw?1:0} ${n.dur} ${P.n1[i]}`);
+    else if(n.t==='pause')tx(`P ${i} ${n.dur} ${P.n1[i]}`);
+    else{tx(`K ${i} ${n.ini} ${n.step} ${n.fin}`);tx(`L ${i} ${P.n1[i]} ${P.n2[i]}`)}
+  });
+}
+
+/* ---- highlight + progress animation ---- */
+function mark(id){
+  const b=id&&boxEl(id);
+  if(b&&b.classList.contains('cur'))return;
+  boxes.querySelectorAll('.box.cur').forEach(x=>x.classList.remove('cur'));
+  boxes.querySelectorAll('.prog i').forEach(i=>{i.style.transition='none';i.style.width='0'});
+  if(b)b.classList.add('cur');
+}
+function setBar(id,f,ms){const i=boxEl(id)&&boxEl(id).querySelector('.prog i');if(!i)return;i.style.transition=ms?`width ${ms}ms linear`:'none';i.style.width=Math.min(1,f)*100+'%'}
+function animBar(id,f0,ms){setBar(id,f0,0);const i=boxEl(id).querySelector('.prog i');void i.offsetWidth;setBar(id,1,ms)}
+function freezeBar(){const b=boxes.querySelector('.box.cur .prog i');if(b){const w=getComputedStyle(b).width;b.style.transition='none';b.style.width=w}}
+function describe(n,i,len){return`Step ${i+1} of ${len}: `+(n.t==='act'?`Active ${(+n.rpm).toFixed(1)} rpm ${n.cw?'↻ CW':'↺ CCW'}, ${n.dur}s`:`Pause ${n.dur}s`)}
+const seqMsg=t=>{$('seqStatus').textContent=t};
+function clearCounts(){boxes.querySelectorAll('.cv').forEach(c=>c.textContent='count –')}
+
+/* ---- simulation (Test run) : same rules as the ESP32 ---- */
+function simEnter(i){
+  const P=SQ.prog;
+  for(let h=0;h<64;h++){
+    if(i<0||i>=P.body.length)return simEnd(3);
+    const n=P.body[i];SQ.cur=i;
+    if(n.t==='cnt'){
+      SQ.cnt[i]+=n.step;const hit=n.step>=0?SQ.cnt[i]>=n.fin:SQ.cnt[i]<=n.fin;
+      const b=boxEl(n.id);b.querySelector('.cv').textContent=hit?`count ${SQ.cnt[i]} = final → ②`:`count ${SQ.cnt[i]} → ①`;
+      b.classList.add('flash');setTimeout(()=>b.classList.remove('flash'),400);
+      if(hit)SQ.cnt[i]=n.ini;i=hit?P.n2[i]:P.n1[i];continue;
+    }
+    if(n.t==='act')Object.assign(SQ.sim,{rpm:n.rpm,cw:!!n.cw,run:true});else SQ.sim.run=false;
+    SQ.next=P.n1[i];SQ.len=SQ.left=n.dur*1000;return simArm();
+  }
+  simEnd(3);
+}
+function simArm(){
+  const n=SQ.prog.body[SQ.cur];SQ.t0=performance.now();mark(n.id);
+  animBar(n.id,(SQ.len-SQ.left)/SQ.len,SQ.left/SQ.spd);
+  SQ.timer=setTimeout(()=>simEnter(SQ.next),SQ.left/SQ.spd);
+  seqMsg(describe(n,SQ.cur,SQ.prog.body.length));seqUI();
+}
+function simEnd(st){clearTimeout(SQ.timer);SQ.state=st;SQ.sim.run=false;SQ.cur=-1;mark(null);seqMsg(st===3?'Finished':'Ready');seqUI()}
+function simPause(){clearTimeout(SQ.timer);SQ.left-=(performance.now()-SQ.t0)*SQ.spd;SQ.state=2;SQ.sim.run=false;freezeBar();seqMsg('Paused');seqUI()}
+function simResume(){const n=SQ.prog.body[SQ.cur];if(n.t==='act')SQ.sim.run=true;SQ.state=1;simArm()}
+
+/* ---- status coming from the ESP32 (Run mode) ---- */
+function seqFromStatus(){
+  if(SQ.mode!=='run')return;
+  const q=S.seq,P=SQ.prog||compile();
+  if(q.state===1||q.state===2){
+    const n=P.body[q.cur];
+    if(n){mark(n.id);setBar(n.id,q.total?(q.total-q.left)/q.total:0,q.state===1?1000:0);
+      seqMsg(describe(n,q.cur,P.body.length)+(q.state===2?' (paused)':`, ${mmss(q.left)} left`))}
+  }else{mark(null);seqMsg(q.state===3?'Finished':'Ready')}
+}
+
+/* ---- buttons ---- */
+function setMode(m){SQ.mode=m;mark(null);seqMsg('Ready');seqUI()}
+$('mTest').onclick=()=>setMode('test');$('mRun').onclick=()=>setMode('run');
+function seqUI(){
+  const run=SQ.mode==='run',st=run?S.seq.state:SQ.state,busy=st===1||st===2;
+  $('mTest').classList.toggle('on',!run);$('mRun').classList.toggle('on',run);
+  $('mTest').disabled=$('mRun').disabled=busy;
+  $('sSpd').disabled=busy;$('sSpd').hidden=run;
+  const go=$('sGo');go.textContent=st===1?'Stop':st===2?'Resume':'Start';go.classList.toggle('running',st===1);
+  go.disabled=$('sReset').disabled=run&&!online;
+  $('modeHint').textContent=run?'Run: the pump really turns. The ESP32 runs the sequence by itself once started.':'Test run: simulation only, the pump does not move.';
+  const P=run?{run:S.run,rpm:S.rpm,cw:S.cw}:SQ.sim;
+  $('seqPump').textContent=(run?'Pump: ':'Simulated pump: ')+(P.run?`running ${(+P.rpm).toFixed(1)} rpm ${P.cw?'↻':'↺'}`:'stopped');
+}
+$('sGo').onclick=()=>{
+  const run=SQ.mode==='run',st=run?S.seq.state:SQ.state;
+  if(st===1){run?tx('H'):simPause();return}
+  if(st===2){run?tx('U'):simResume();return}
+  const P=compile();if(P.err){seqMsg(P.err);return}
+  SQ.prog=P;clearCounts();
+  if(run){upload(P);tx('G '+P.st);seqMsg('Starting…')}
+  else{SQ.cnt=P.body.map(n=>n.t==='cnt'?n.ini:0);SQ.spd=+$('sSpd').value;SQ.state=1;simEnter(P.st)}
+};
+$('sReset').onclick=()=>{
+  clearCounts();
+  if(SQ.mode==='run'){tx('X');mark(null);seqMsg('Ready')}else simEnd(0);
+};
+
+/* ---- element names overlay ---- */
+$('btnNames').onclick=()=>{
+  const L=$('nameLayer');if(L.children.length){L.innerHTML='';return}
+  document.querySelectorAll('[data-name]').forEach(el=>{
+    const r=el.getBoundingClientRect();if(!r.width&&!r.height)return;
+    const s=document.createElement('span');s.textContent=el.dataset.name;
+    s.style.cssText=`left:${r.left+scrollX}px;top:${r.top+scrollY}px`;L.appendChild(s);
+  });
+};
+renderBoxes();render();
+</script></body></html>
